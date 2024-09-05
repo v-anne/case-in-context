@@ -17,4 +17,6 @@ pip install -r requirements.txt
 
 ### 2. Modify the .env file with your API keys for Twitter/X, OpenAI, and CourtListener.
 
-### 3. Run the python script. It will find the latest tweets from the AP that match and identify the case(s) discussed by each article.
+### 3. Run the python script.
+
+It will find the latest tweets from the AP that match and identify the case(s) discussed by each article.
