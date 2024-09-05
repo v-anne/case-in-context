@@ -1,5 +1,6 @@
-import requests
 import os
+import json
+import requests
 from openai import OpenAI
 
 
@@ -8,16 +9,18 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 COURTLISTENER_API_KEY = os.getenv("COURTLISTENER_API_KEY")
 
 
-twitter_url = "https://api.twitter.com/2/tweets/search/recent"
+twitter_query_url = "https://api.twitter.com/2/tweets/search/recent"
 twitter_query_params = {
     'query': 'from:AP "federal court" OR "appeals court"'
 }
 
-twitter_headers = {
+twitter_query_headers = {
     "Authorization": f"Bearer {BEARER_TOKEN}"
 }
 
-response = requests.get(twitter_url, headers=twitter_headers, params=twitter_query_params)
+response = requests.get(twitter_query_url, headers=twitter_query_headers, params=twitter_query_params)
+
+tweet_id = response["tweet_id"]
 
 if response.status_code == 200:
     data = response.json()
@@ -66,3 +69,24 @@ if response.status_code == 200:
     print(data)
 else:
     print(f"Failed to fetch data: {response.status_code}")
+
+twitter_post_url = "https://api.twitter.com/2/tweets"
+twitter_post_headers = {
+    'Authorization': f"Oauth {BEARER_TOKEN}",
+    'Content-type': 'application/json'
+}
+
+twitter_post_data = {
+    "reply": {
+        "in_reply_to_tweet_id": f"{tweet_id}"
+    },
+    "text": f"Here is the case this article is likely discussing: \n courtlistener.com/{response[0]["absolute_url"]}"
+}
+
+response = requests.post(twitter_post_url, headers=twitter_post_headers, data=json.dumps(twitter_post_data))
+
+if response.status_code == 201:
+    print("Tweet posted successfully.")
+else:
+    print(f"Failed to post tweet: {response.status_code}")
+    print(response.text)
